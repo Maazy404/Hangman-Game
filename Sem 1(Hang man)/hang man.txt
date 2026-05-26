@@ -1,0 +1,128 @@
+#include <iostream>
+#include <vector>
+#include <string>
+#include <ctime>
+#include <cstdlib>
+
+using namespace std;
+
+// Function to display the hangman based on attempts
+void displayHangman(int attempts) {
+    vector<string> hangman = {
+        "   _______\n"
+        "  |      |\n"
+        "  |      \n"
+        "  |      \n"
+        "  |      \n"
+        "  |      \n"
+        "__|__\n",
+
+        "   _______\n"
+        "  |      |\n"
+        "  |      O\n"
+        "  |      \n"
+        "  |      \n"
+        "  |      \n"
+        "__|__\n",
+
+        "   _______\n"
+        "  |      |\n"
+        "  |      O\n"
+        "  |      |\n"
+        "  |      \n"
+        "  |      \n"
+        "__|__\n",
+
+        "   _______\n"
+        "  |      |\n"
+        "  |      O\n"
+        "  |     /|\n"
+        "  |      \n"
+        "  |      \n"
+        "__|__\n",
+
+        "   _______\n"
+        "  |      |\n"
+        "  |      O\n"
+        "  |     /|\\\n"
+        "  |      \n"
+        "  |      \n"
+        "__|__\n",
+
+        "   _______\n"
+        "  |      |\n"
+        "  |      O\n"
+        "  |     /|\\\n"
+        "  |     / \n"
+        "  |      \n"
+        "__|__\n",
+
+        "   _______\n"
+        "  |      |\n"
+        "  |      O\n"
+        "  |     /|\\\n"
+        "  |     / \\\n"
+        "  |      \n"
+        "__|__\n"
+    };
+
+    cout << hangman[attempts] << endl;
+}
+
+int main() {
+    // List of words
+    vector<string> words = {"programming", "hangman", "computer", "science", "education", "challenge"};
+    
+    // Seed random number generator
+    srand(static_cast<unsigned int>(time(0)));
+
+    // Choose a random word
+    string word = words[rand() % words.size()];
+    string guessedWord(word.length(), '_');
+    int attempts = 0;
+    const int maxAttempts = 6;
+    vector<char> wrongGuesses;
+
+    cout << "Welcome to Hangman! Guess the word letter by letter." << endl;
+
+    while (attempts < maxAttempts) {
+        displayHangman(attempts);
+        cout << "Word: " << guessedWord << endl;
+        if (!wrongGuesses.empty()) {
+            cout << "Wrong guesses: ";
+            for (char c : wrongGuesses) cout << c << " ";
+            cout << endl;
+        }
+
+        cout << "Enter your guess: ";
+        char guess;
+        cin >> guess;
+
+        // Check if the guess is in the word
+        bool correctGuess = false;
+        for (size_t i = 0; i < word.length(); ++i) {
+            if (word[i] == guess && guessedWord[i] == '_') {
+                guessedWord[i] = guess;
+                correctGuess = true;
+            }
+        }
+
+        if (!correctGuess) {
+            // If the guess is incorrect
+            wrongGuesses.push_back(guess);
+            ++attempts;
+        }
+
+        // Check if the player has guessed the word
+        if (guessedWord == word) {
+            cout << "Congratulations! You guessed the word: " << word << endl;
+            return 0;
+        }
+    }
+
+    // Player lost
+    displayHangman(attempts);
+    cout << "You lost! The word was: " << word << endl;
+
+    return 0;
+}

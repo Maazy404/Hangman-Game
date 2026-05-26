@@ -1,0 +1,147 @@
+#include <iostream>
+#include <vector>
+#include <string>
+#include <ctime>
+#include <cstdlib>
+#include <algorithm>
+
+using namespace std;
+
+// Function to get a random word from the predefined list
+string getRandomWord(const vector<string>& words) {
+    srand(static_cast<unsigned int>(time(0)));
+    return words[rand() % words.size()];
+}
+
+// Function to display the current state of the word
+void displayWord(const string& guessedWord) {
+    cout << "Word: " << guessedWord << endl;
+}
+
+// Function to display the hangman figure based on incorrect attempts
+void drawHangman(int attempts) {
+    vector<string> hangman = {
+        "   _______\n"
+        "  |      |\n"
+        "  |      \n"
+        "  |      \n"
+        "  |      \n"
+        "  |      \n"
+        "__|__\n",
+
+        "   _______\n"
+        "  |      |\n"
+        "  |      O\n"
+        "  |      \n"
+        "  |      \n"
+        "  |      \n"
+        "__|__\n",
+
+        "   _______\n"
+        "  |      |\n"
+        "  |      O\n"
+        "  |      |\n"
+        "  |      \n"
+        "  |      \n"
+        "__|__\n",
+
+        "   _______\n"
+        "  |      |\n"
+        "  |      O\n"
+        "  |     /|\n"
+        "  |      \n"
+        "  |      \n"
+        "__|__\n",
+
+        "   _______\n"
+        "  |      |\n"
+        "  |      O\n"
+        "  |     /|\\\n"
+        "  |      \n"
+        "  |      \n"
+        "__|__\n",
+
+        "   _______\n"
+        "  |      |\n"
+        "  |      O\n"
+        "  |     /|\\\n"
+        "  |     / \n"
+        "  |      \n"
+        "__|__\n",
+
+        "   _______\n"
+        "  |      |\n"
+        "  |      O\n"
+        "  |     /|\\\n"
+        "  |     / \\\n"
+        "  |      \n"
+        "__|__\n"
+    };
+
+    cout << hangman[attempts] << endl;
+}
+
+// Function to check if the guessed word is correct and update state
+bool isWordGuessed(char guess, const string& word, string& guessedWord) {
+    bool correctGuess = false;
+    for (size_t i = 0; i < word.length(); ++i) {
+        if (word[i] == guess && guessedWord[i] == '_') {
+            guessedWord[i] = guess;
+            correctGuess = true;
+        }
+    }
+    return correctGuess;
+}
+
+// Main function for game logic
+int main() {
+    vector<string> words = {"programming", "hangman", "computer", "science", "education", "challenge"};
+    string word = getRandomWord(words);
+    string guessedWord(word.length(), '_');
+    int attempts = 0;
+    const int maxAttempts = 6;
+    vector<char> wrongGuesses;
+
+    cout << "Welcome to Hangman! Guess the word letter by letter." << endl;
+
+    while (attempts < maxAttempts) {
+        drawHangman(attempts);
+        displayWord(guessedWord);
+
+        if (!wrongGuesses.empty()) {
+            cout << "Wrong guesses: ";
+            for (char c : wrongGuesses) cout << c << " ";
+            cout << endl;
+        }
+
+        cout << "Enter your guess: ";
+        char guess;
+        cin >> guess;
+
+        // Convert to lowercase for case-insensitivity
+        guess = tolower(guess);
+
+        // Check the guessed letter
+        if (!isWordGuessed(guess, word, guessedWord)) {
+            wrongGuesses.push_back(guess);
+            ++attempts;
+        }
+
+        // Check if the word is fully guessed
+        if (guessedWord == word) {
+            cout << "Congratulations! You guessed the word: " << word << endl;
+            return 0;
+        }
+    }
+
+    // Player lost
+    drawHangman(attempts);
+    cout << "You lost! The word was: " << word << endl;
+
+    return 0;
+}
+
+
+
+
+

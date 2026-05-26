@@ -1,0 +1,272 @@
+#include <vector>
+#include <string>
+#include <cstdlib>
+#include <ctime>
+#include <iostream>
+#include <cctype>
+#include <algorithm>
+#include <windows.h> // For Windows
+
+
+using namespace std;
+
+// Function to clear the terminal screen
+void clearScreen() {
+    system("cls"); // Clear screen for Windows
+
+}
+
+// Function to display the current state of the word
+void displayWord(const string& guessedWord) {
+    cout << "Word: " << guessedWord << endl;
+}
+
+// Function to display the hangman figure based on incorrect attempts
+void drawHangman(int attempts) {
+    vector<string> hangman = {
+        "   _______\n"
+        "  |      |\n"
+        "  |      \n"
+        "  |      \n"
+        "  |      \n"
+        "  |      \n"
+        "__|__\n",
+
+        "   _______\n"
+        "  |      |\n"
+        "  |      O\n"
+        "  |      \n"
+        "  |      \n"
+        "  |      \n"
+        "__|__\n",
+
+        "   _______\n"
+        "  |      |\n"
+        "  |      O\n"
+        "  |      |\n"
+        "  |      \n"
+        "  |      \n"
+        "__|__\n",
+
+        "   _______\n"
+        "  |      |\n"
+        "  |      O\n"
+        "  |     /|\n"
+        "  |      \n"
+        "  |      \n"
+        "__|__\n",
+
+        "   _______\n"
+        "  |      |\n"
+        "  |      O\n"
+        "  |     /|\\\n"
+        "  |      \n"
+        "  |      \n"
+        "__|__\n",
+
+        "   _______\n"
+        "  |      |\n"
+        "  |      O\n"
+        "  |     /|\\\n"
+        "  |     / \n"
+        "  |      \n"
+        "__|__\n",
+
+        "   _______\n"
+        "  |      |\n"
+        "  |      O\n"
+        "  |     /|\\\n"
+        "  |     / \\\n"
+        "  |      \n"
+        "__|__\n"
+    };
+
+    cout << hangman[attempts] << endl;
+}
+
+// Function to check if the guessed word is correct and update state
+bool isWordGuessed(char guess, const string& word, string& guessedWord) {
+    bool correctGuess = false;
+    for (size_t i = 0; i < word.length(); ++i) {
+        if (word[i] == guess && guessedWord[i] == '_') {
+            guessedWord[i] = guess;
+            correctGuess = true;
+        }
+    }
+    return correctGuess;
+}
+
+bool PlayAgain() {
+    char replay;
+    cout << "Do you want to play again? (y/n): ";
+    cin >> replay;
+    return (replay == 'y' || replay == 'Y');
+}
+
+// Function to get a word and hint from a player
+void getWordAndHint(string& word, string& hint, const string& playerName) {
+    cout << playerName << ", enter a word for the other player to guess: ";
+    cin >> word;
+    cout << playerName << ", enter a hint for the word: ";
+    cin.ignore(); // Clear the input buffer
+    getline(cin, hint);
+    clearScreen(); // Clear the screen after input
+}
+
+// Main function
+int main() {
+    do {
+        string player1Name, player2Name;
+        cout << "Enter Player 1's name: ";
+        cin >> player1Name;
+        cout << "Enter Player 2's name: ";
+        cin >> player2Name;
+
+        string player1Word, player1Hint, player2Word, player2Hint;
+
+        // Player 1 inputs a word and hint for Player 2 to guess
+        getWordAndHint(player1Word, player1Hint, player1Name);
+
+        // Player 2 inputs a word and hint for Player 1 to guess
+        getWordAndHint(player2Word, player2Hint, player2Name);
+
+        // Player 2 guesses Player 1's word
+        {
+            string guessedWord(player1Word.length(), '_');
+            int attempts = 0;
+            const int maxAttempts = 6;
+            vector<char> wrongGuesses;
+
+            cout << player2Name << ", you are guessing " << player1Name << "'s word." << endl;
+            cout << "Hint: " << player1Hint << endl;
+
+            while (attempts < maxAttempts) {
+                drawHangman(attempts);
+                displayWord(guessedWord);
+
+                if (!wrongGuesses.empty()) {
+                    cout << "Wrong guesses: ";
+                    for (char c : wrongGuesses) cout << c << " ";
+                    cout << endl;
+                }
+
+                char guess;
+                bool validGuess = false;
+
+                while (!validGuess) {
+                    cout << player2Name << ", enter your guess: ";
+                    string input;
+                    cin >> input;
+
+                    // Check if the input is a single character
+                    if (input.length() != 1 || !isalpha(input[0])) {
+                        cout << "Invalid input! Please enter a single valid letter." << endl;
+                    }
+                    else {
+                        guess = tolower(input[0]);
+
+                        if (find(wrongGuesses.begin(), wrongGuesses.end(), guess) != wrongGuesses.end() ||
+                            find(guessedWord.begin(), guessedWord.end(), guess) != guessedWord.end()) {
+                            cout << "You already guessed that letter. Please try a different one." << endl;
+                        }
+                        else {
+                            validGuess = true;
+                        }
+                    }
+                }
+
+                // Check the guessed letter
+                if (!isWordGuessed(guess, player1Word, guessedWord)) {
+                    wrongGuesses.push_back(guess);
+                    ++attempts;
+                }
+
+                // Check if the word is fully guessed
+                if (guessedWord == player1Word) {
+                    cout << endl;
+                    cout << "Word: " << guessedWord << endl;
+                    cout << "Congratulations, " << player2Name << "! You guessed the word: " << player1Word << endl;
+                    break;
+                }
+            }
+
+            // Player 2 lost
+            if (guessedWord != player1Word) {
+                drawHangman(attempts);
+                cout << player2Name << ", you lost! The word was: " << player1Word << endl;
+            }
+        }
+
+        // Player 1 guesses Player 2's word
+        {
+            string guessedWord(player2Word.length(), '_');
+            int attempts = 0;
+            const int maxAttempts = 6;
+            vector<char> wrongGuesses;
+
+            cout << player1Name << ", you are guessing " << player2Name << "'s word." << endl;
+            cout << "Hint: " << player2Hint << endl;
+
+            while (attempts < maxAttempts) {
+                drawHangman(attempts);
+                displayWord(guessedWord);
+
+                if (!wrongGuesses.empty()) {
+                    cout << "Wrong guesses: ";
+                    for (char c : wrongGuesses) cout << c << " ";
+                    cout << endl;
+                }
+
+                char guess;
+                bool validGuess = false;
+
+                while (!validGuess) {
+                    cout << player1Name << ", enter your guess: ";
+                    string input;
+                    cin >> input;
+
+                    // Check if the input is a single character
+                    if (input.length() != 1 || !isalpha(input[0])) {
+                        cout << "Invalid input! Please enter a single valid letter." << endl;
+                    }
+                    else {
+                        guess = tolower(input[0]);
+
+                        if (find(wrongGuesses.begin(), wrongGuesses.end(), guess) != wrongGuesses.end() ||
+                            find(guessedWord.begin(), guessedWord.end(), guess) != guessedWord.end()) {
+                            cout << "You already guessed that letter. Please try a different one." << endl;
+                        }
+                        else {
+                            validGuess = true;
+                        }
+                    }
+                }
+
+                // Check the guessed letter
+                if (!isWordGuessed(guess, player2Word, guessedWord)) {
+                    wrongGuesses.push_back(guess);
+                    ++attempts;
+                }
+
+                // Check if the word is fully guessed
+                if (guessedWord == player2Word) {
+                    cout << endl;
+                    cout << "Word: " << guessedWord << endl;
+                    cout << "Congratulations, " << player1Name << "! You guessed the word: " << player2Word << endl;
+                    break;
+                }
+            }
+
+            // Player 1 lost
+            if (guessedWord != player2Word) {
+                drawHangman(attempts);
+                cout << player1Name << ", you lost! The word was: " << player2Word << endl;
+            }
+        }
+
+    } while (PlayAgain());
+
+    cout << "Goodbye, Thanks for playing." << endl;
+
+    return 0;
+}
